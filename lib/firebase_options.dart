@@ -55,6 +55,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '396899017293',
     projectId: 'shalltear-d540c',
     storageBucket: 'shalltear-d540c.appspot.com',
+    databaseURL: 'https://shalltear-d540c-default-rtdb.asia-southeast1.firebasedatabase.app'
   );
 
   static const FirebaseOptions ios = FirebaseOptions(

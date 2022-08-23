@@ -1,5 +1,4 @@
-import 'dart:async';
-
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rounded_loading_button/rounded_loading_button.dart';
@@ -14,10 +13,35 @@ class CreateCodeNamePage extends StatefulWidget {
 
 class _CreateCodeNamePageState extends State<CreateCodeNamePage> {
   final RoundedLoadingButtonController _btnController = RoundedLoadingButtonController();
+  final keyController =  TextEditingController();
+  FirebaseDatabase database = FirebaseDatabase.instance;
 
-  void _doSomething() async {
-    Timer(const Duration(seconds: 3), () {
-      _btnController.success();
+  void _onClick() async {
+    saveToDb(keyController.text);
+  }
+
+  void saveToDb(String key) async{
+    // DatabaseReference ref =
+    // FirebaseDatabase.instance.ref("lobby/{$key}");
+
+   // await postRef.push().set(
+   //    {
+   //      "isShow" : false,
+   //      "members" : {
+   //          "name" : widget.name,
+   //          "value" : 0
+   //      }
+   //    }
+   //  ).then((_) {
+   //    _btnController.success();
+   //  });
+    DatabaseReference ref = FirebaseDatabase.instance.ref("my_data");
+    await ref.push().set({
+      "name": "John",
+      "age": 18,
+      "address": {
+        "line1": "100 Mountain View"
+      }
     });
   }
 
@@ -55,10 +79,11 @@ class _CreateCodeNamePageState extends State<CreateCodeNamePage> {
               const SizedBox(
                 height: 20,
               ),
-              const TextField(
+               TextField(
                 maxLength: 16,
                 maxLengthEnforcement: MaxLengthEnforcement.enforced,
-                decoration: InputDecoration(
+                controller: keyController,
+                decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: 'Lobby key',
                   hintText: 'Lobby key',
@@ -69,7 +94,7 @@ class _CreateCodeNamePageState extends State<CreateCodeNamePage> {
               ),
               RoundedLoadingButton(
                 controller: _btnController,
-                onPressed: _doSomething,
+                onPressed: _onClick,
                 color: const Color.fromRGBO(36, 80, 150, 1.0),
                 child: const Text('Create lobby', style: TextStyle(color: Colors.white)),
               ),

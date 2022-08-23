@@ -1,4 +1,5 @@
 import 'package:animated_button/animated_button.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:shalltear/ui/new_lobby/create_code_name.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -35,6 +36,32 @@ class _HomeState extends State<Home> {
       txtName = name;
     });
   }
+  void saveToDb(String key) async{
+    // DatabaseReference ref =
+    // FirebaseDatabase.instance.ref("lobby/{$key}");
+
+    // await postRef.push().set(
+    //    {
+    //      "isShow" : false,
+    //      "members" : {
+    //          "name" : widget.name,
+    //          "value" : 0
+    //      }
+    //    }
+    //  ).then((_) {
+    //    _btnController.success();
+    //  });
+    
+    DatabaseReference ref = FirebaseDatabase.instance.ref("my_data");
+    await ref.push().set({
+      "name": "John",
+      "age": 18,
+      "address": {
+        "line1": "100 Mountain View"
+      }
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +135,9 @@ class _HomeState extends State<Home> {
                     height: 210,
                     width: double.maxFinite,
                     child: GestureDetector(
-                      onTap: () {},
+                      onTap: () {
+                        saveToDb("rthy");
+                      },
                       child: Card(
                           color: const Color.fromRGBO(253, 107, 166, 1.0),
                           shape: BeveledRectangleBorder(

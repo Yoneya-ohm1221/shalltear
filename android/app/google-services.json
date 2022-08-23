@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "396899017293",
+    "firebase_url": "https://shalltear-d540c-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "shalltear-d540c",
     "storage_bucket": "shalltear-d540c.appspot.com"
   },
@@ -13,6 +14,14 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "396899017293-33k5o8a6kdd4iq5h19f981pv08c0eiaq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.yny.shalltear.shalltear",
+            "certificate_hash": "7fabf6ace34c2617fafc9b6f60aa5be4ad58dcf3"
+          }
+        },
         {
           "client_id": "396899017293-ltaupvdv9htsvq479uhi68sbp5sio3er.apps.googleusercontent.com",
           "client_type": 3
@@ -29,6 +38,13 @@
             {
               "client_id": "396899017293-ltaupvdv9htsvq479uhi68sbp5sio3er.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "396899017293-r36btghg5eih273ftqn6g3rdch585ol3.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.yny.shalltear.shalltear"
+              }
             }
           ]
         }
