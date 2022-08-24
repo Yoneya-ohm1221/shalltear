@@ -17,32 +17,26 @@ class _CreateCodeNamePageState extends State<CreateCodeNamePage> {
   FirebaseDatabase database = FirebaseDatabase.instance;
 
   void _onClick() async {
-    saveToDb(keyController.text);
+   await saveToDb(keyController.text);
   }
 
-  void saveToDb(String key) async{
-    // DatabaseReference ref =
-    // FirebaseDatabase.instance.ref("lobby/{$key}");
+  Future<void> saveToDb(String key) async{
+    DatabaseReference ref =
+    FirebaseDatabase.instance.ref("lobby/$key");
 
-   // await postRef.push().set(
-   //    {
-   //      "isShow" : false,
-   //      "members" : {
-   //          "name" : widget.name,
-   //          "value" : 0
-   //      }
-   //    }
-   //  ).then((_) {
-   //    _btnController.success();
-   //  });
-    DatabaseReference ref = FirebaseDatabase.instance.ref("my_data");
-    await ref.push().set({
-      "name": "John",
-      "age": 18,
-      "address": {
-        "line1": "100 Mountain View"
+   await ref.set(
+      {
+        "isShow" : false,
+        "members" : {
+          widget.name : {
+            "value" : 0
+          }
+        }
       }
+    ).then((_) {
+      _btnController.success();
     });
+
   }
 
   @override

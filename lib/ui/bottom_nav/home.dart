@@ -1,6 +1,7 @@
 import 'package:animated_button/animated_button.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:shalltear/ui/join_lobby/join_lobby_page.dart';
 import 'package:shalltear/ui/new_lobby/create_code_name.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -36,32 +37,6 @@ class _HomeState extends State<Home> {
       txtName = name;
     });
   }
-  void saveToDb(String key) async{
-    // DatabaseReference ref =
-    // FirebaseDatabase.instance.ref("lobby/{$key}");
-
-    // await postRef.push().set(
-    //    {
-    //      "isShow" : false,
-    //      "members" : {
-    //          "name" : widget.name,
-    //          "value" : 0
-    //      }
-    //    }
-    //  ).then((_) {
-    //    _btnController.success();
-    //  });
-    
-    DatabaseReference ref = FirebaseDatabase.instance.ref("my_data");
-    await ref.push().set({
-      "name": "John",
-      "age": 18,
-      "address": {
-        "line1": "100 Mountain View"
-      }
-    });
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -136,7 +111,7 @@ class _HomeState extends State<Home> {
                     width: double.maxFinite,
                     child: GestureDetector(
                       onTap: () {
-                        saveToDb("rthy");
+
                       },
                       child: Card(
                           color: const Color.fromRGBO(253, 107, 166, 1.0),
@@ -174,7 +149,15 @@ class _HomeState extends State<Home> {
                                             "https://cdn.discordapp.com/attachments/802932825887866904/1010827213484077116/coffee.png"),
                                         width: 35),
                                     AnimatedButton(
-                                      onPressed: () {},
+                                      onPressed: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    JoinLobbyPage(
+                                                      name: txtName,
+                                                    )));
+                                      },
                                       duration: 70,
                                       height: 40,
                                       width: 100,
