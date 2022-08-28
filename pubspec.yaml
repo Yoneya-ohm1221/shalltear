@@ -40,6 +40,7 @@ dependencies:
   rounded_loading_button: ^2.1.0
   firebase_database: ^9.1.2
   charts_flutter: ^0.12.0
+  swipe_deck: ^1.1.0
 
 dev_dependencies:
   flutter_test:

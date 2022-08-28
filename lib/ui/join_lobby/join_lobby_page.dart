@@ -4,6 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rounded_loading_button/rounded_loading_button.dart';
+import 'package:shalltear/ui/join_lobby/poker_page.dart';
 
 class JoinLobbyPage extends StatefulWidget {
   final String name;
@@ -31,11 +32,13 @@ class _JoinLobbyPageState extends State<JoinLobbyPage> {
     if (snapshot.exists) {
       await ref
           .child("members/${widget.name}")
-          .update({"value": 0}).then((_) => {
+          .update({"value": "0"}).then((_) => {
                 setState(() {
                   validate = false;
                 }),
-                _btnController.success()
+                _btnController.success(),
+
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => PokerPage(lobbyKey: key)))
               });
     } else {
       setState(() {
