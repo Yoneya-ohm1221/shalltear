@@ -3,6 +3,8 @@ import 'dart:ffi';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
+import 'package:flip_card/flip_card.dart';
+import 'package:flip_card/flip_card_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:shalltear/models/main_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,62 +19,110 @@ class PokerPage extends StatefulWidget {
 }
 
 class _PokerPageState extends State<PokerPage> {
+  late final ref = FirebaseDatabase.instance.ref("lobby/${widget.lobbyKey}");
   late final refMember = FirebaseDatabase.instance.ref("lobby/${widget.lobbyKey}/members");
-   List<MainCard> mainCard = [];
+  List<MainCard> mainCard = [];
 
+  final List _controller = [];
   late DatabaseReference databaseReference;
+
   @override
   Widget build(BuildContext context) {
     readData();
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0.0,
-        leading: const BackButton(
-          color: Color.fromRGBO(225, 69, 140, 1.0),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showModalBottomSheet<void>(
-            context: context,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(10.0),
-                  topRight: Radius.circular(10.0)),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0.0,
+          centerTitle: true,
+          title: Text(
+            widget.lobbyKey,
+            style: const TextStyle(
+              color: Colors.pink,
             ),
-            builder: (BuildContext context) {
-              return bottomSheet(context);
-            },
-          );
-        },
-        child: const Icon(Icons.ad_units),
-      ),
-      body: StreamBuilder(
-        stream: refMember.onValue,
-        builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-          if(snapshot.hasData){
-            mainCard.clear();
-            Map<dynamic, dynamic> map = snapshot.data.snapshot.value;
-            map.forEach((key, value) {
-            mainCard.add(MainCard(key, value['value']));
-            });
-            return  GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3),
-              itemCount: mainCard.length,
-              itemBuilder: (context, index) {
-                return buildContainer(mainCard[index].name,mainCard[index].value);
+          ),
+          leading: const BackButton(
+            color: Color.fromRGBO(225, 69, 140, 1.0),
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            showModalBottomSheet<void>(
+              context: context,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(10.0),
+                    topRight: Radius.circular(10.0)),
+              ),
+              builder: (BuildContext context) {
+                return bottomSheet(context);
               },
             );
-          }
-          else {
-            return CircularProgressIndicator();
-          }
-        },
+          },
+          child: const Icon(Icons.ad_units),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(" Results",
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Color.fromRGBO(36, 80, 150, 1.0),
+                    fontWeight: FontWeight.w500
+                  ),
+                  ),
+                  OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                        textStyle: const TextStyle(fontSize: 16),
+                        primary: const Color.fromRGBO(36, 80, 150, 1.0),
+                        side: const BorderSide(
+                          width: 2,
+                          color: Color.fromRGBO(36, 80, 150, 1.0),
+                        )),
+                    child: const Text("Show"),
+                    onPressed: () {
+                      doStuff();
+                    },
+                  )
+                ],
+              ),
 
-      )
-      );
+              Expanded(
+                child: StreamBuilder(
+                  stream: refMember.onValue,
+                  builder:
+                      (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+                    if (snapshot.hasData) {
+                      mainCard.clear();
+                      Map<dynamic, dynamic> map = snapshot.data.snapshot.value;
+                      map.forEach((key, value) {
+                        mainCard.add(MainCard(key, value['value']));
+                        _controller.add(FlipCardController());
+                      });
+                      return GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3),
+                        itemCount: mainCard.length,
+                        itemBuilder: (context, index) {
+                          return buildContainer(mainCard[index].name,
+                              mainCard[index].value, _controller[index]);
+                        },
+                      );
+                    } else {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+                  },
+                ),
+              )
+            ],
+          ),
+        ));
   }
 
   Container bottomSheet(BuildContext context) {
@@ -159,25 +209,46 @@ class _PokerPageState extends State<PokerPage> {
     );
   }
 
-  Container buildContainer(String name, String value) {
+  Container buildContainer(String name, String value, controller) {
     return Container(
-      margin: const EdgeInsets.all(0),
-      width: 130,
-      height: 180,
-      child: Card(
-          child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Text(name),
-            Expanded(
-                child: Center(
-              child: Text(value),
-            ))
-          ],
-        ),
-      )),
-    );
+        margin: const EdgeInsets.all(0),
+        width: 130,
+        height: 180,
+        child: FlipCard(
+          fill: Fill.fillBack,
+          flipOnTouch: true,
+          direction: FlipDirection.HORIZONTAL,
+          controller: controller,
+          front: Container(
+            child: Container(
+              child: Card(
+                  child: Container(
+                    color: Colors.pink,
+                    child: Center(
+                      child: Text(
+                        name,
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  )),
+            ),
+          ),
+          back:  Container(
+            child: Card(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Text(name),
+                      Expanded(
+                          child: Center(
+                            child: Text(value),
+                          ))
+                    ],
+                  ),
+                )),
+          ),
+        ));
   }
 
   void updateNumber(String number) async {
@@ -188,8 +259,15 @@ class _PokerPageState extends State<PokerPage> {
     });
   }
 
-  void readData() async{
+  void readData() async {
     mainCard.clear();
-
   }
+
+  void doStuff() {
+    for (var element in _controller) {
+      element.controller?.forward();
+      element.controller?.recerse();
+    }
+  }
+
 }
