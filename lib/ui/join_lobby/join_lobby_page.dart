@@ -26,6 +26,13 @@ class _JoinLobbyPageState extends State<JoinLobbyPage> {
   }
 
   Future<void> saveToDb(String key) async {
+    if(key.isEmpty){
+      setState(() {
+        validate = true;
+      });
+      _btnController.reset();
+      return;
+    }
     DatabaseReference ref = FirebaseDatabase.instance.ref("lobby/$key/");
 
     final snapshot = await ref.get();

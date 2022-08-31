@@ -32,15 +32,24 @@ class _HomeState extends State<Home> {
 
   Future<void> getName() async {
     final prefs = await SharedPreferences.getInstance();
-    String name = prefs.getString('Name') ?? "Jordan";
+    String name = prefs.getString('Name') ?? "Bob";
     setState(() {
       txtName = name;
     });
   }
 
+  Future<void> checkName() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? name = prefs.getString('Name');
+    if(name ==null || name.isEmpty){
+      saveName('Bob');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final nameController = TextEditingController();
+    checkName();
     getName();
     return Scaffold(
       appBar: AppBar(

@@ -1,8 +1,4 @@
-import 'dart:ffi';
-
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:flip_card/flip_card_controller.dart';
 import 'package:flutter/material.dart';
@@ -20,15 +16,21 @@ class PokerPage extends StatefulWidget {
 
 class _PokerPageState extends State<PokerPage> {
   late final ref = FirebaseDatabase.instance.ref("lobby/${widget.lobbyKey}");
-  late final refMember = FirebaseDatabase.instance.ref("lobby/${widget.lobbyKey}/members");
+  late final refMember =
+      FirebaseDatabase.instance.ref("lobby/${widget.lobbyKey}/members");
   List<MainCard> mainCard = [];
-
   final List _controller = [];
   late DatabaseReference databaseReference;
+  String showText = "Show";
+
+  @override
+  void initState() {
+    readData();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    readData();
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.transparent,
@@ -67,12 +69,12 @@ class _PokerPageState extends State<PokerPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(" Results",
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Color.fromRGBO(36, 80, 150, 1.0),
-                    fontWeight: FontWeight.w500
-                  ),
+                  const Text(
+                    " Results",
+                    style: TextStyle(
+                        fontSize: 18,
+                        color: Color.fromRGBO(36, 80, 150, 1.0),
+                        fontWeight: FontWeight.w500),
                   ),
                   OutlinedButton(
                     style: OutlinedButton.styleFrom(
@@ -82,14 +84,13 @@ class _PokerPageState extends State<PokerPage> {
                           width: 2,
                           color: Color.fromRGBO(36, 80, 150, 1.0),
                         )),
-                    child: const Text("Show"),
+                    child: Text(showText),
                     onPressed: () {
-                      doStuff();
+                      updateStatus();
                     },
                   )
                 ],
               ),
-
               Expanded(
                 child: StreamBuilder(
                   stream: refMember.onValue,
@@ -216,37 +217,37 @@ class _PokerPageState extends State<PokerPage> {
         height: 180,
         child: FlipCard(
           fill: Fill.fillBack,
-          flipOnTouch: true,
+          flipOnTouch: false,
           direction: FlipDirection.HORIZONTAL,
           controller: controller,
           front: Container(
             child: Container(
               child: Card(
                   child: Container(
-                    color: Colors.pink,
-                    child: Center(
-                      child: Text(
-                        name,
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  )),
+                color: Colors.pink,
+                child: Center(
+                  child: Text(
+                    name,
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              )),
             ),
           ),
-          back:  Container(
+          back: Container(
             child: Card(
                 child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Text(name),
-                      Expanded(
-                          child: Center(
-                            child: Text(value),
-                          ))
-                    ],
-                  ),
-                )),
+              padding: EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Text(name),
+                  Expanded(
+                      child: Center(
+                    child: Text(value),
+                  ))
+                ],
+              ),
+            )),
           ),
         ));
   }
@@ -254,6 +255,7 @@ class _PokerPageState extends State<PokerPage> {
   void updateNumber(String number) async {
     final prefs = await SharedPreferences.getInstance();
     String? name = prefs.getString('Name');
+
     await refMember.update({
       name!: {"value": number}
     });
@@ -261,13 +263,46 @@ class _PokerPageState extends State<PokerPage> {
 
   void readData() async {
     mainCard.clear();
+    await ref.child("isShow").get().then((value) {
+      print("sfdsf");
+      handleFlip(value.value as bool);
+    });
+
+    ref.onChildChanged.listen((event) {
+      //print(event.snapshot.value);
+      handleFlip(event.snapshot.value as bool);
+    });
   }
 
-  void doStuff() {
+  void updateStatus() async{
+   await ref.child("isShow").get().then((value) {
+      ref.update({"isShow": !(value.value as bool)});
+    });
+  }
+
+  void flipFront() {
     for (var element in _controller) {
       element.controller?.forward();
-      element.controller?.recerse();
     }
+    setState(() {
+      showText = "Show";
+    });
   }
 
+  void flipBack() {
+    for (var element in _controller) {
+      element.controller?.reverse();
+    }
+    setState(() {
+      showText = "Hidden";
+    });
+  }
+
+  void handleFlip(bool status) {
+    if (status == true) {
+      flipFront();
+    } else {
+      flipBack();
+    }
+  }
 }
