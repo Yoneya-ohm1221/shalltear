@@ -15,6 +15,8 @@ class PokerPage extends StatefulWidget {
 }
 
 class _PokerPageState extends State<PokerPage> {
+  late Future<String> name;
+  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   late final ref = FirebaseDatabase.instance.ref("lobby/${widget.lobbyKey}");
   late final refMember =
       FirebaseDatabase.instance.ref("lobby/${widget.lobbyKey}/members");
@@ -22,108 +24,121 @@ class _PokerPageState extends State<PokerPage> {
   final List _controller = [];
   late DatabaseReference databaseReference;
   String showText = "Show";
+  late StreamBuilder _widget;
 
   @override
   void initState() {
-    readData();
     super.initState();
+    name = _prefs.then((SharedPreferences prefs) {
+      return prefs.getString('Name') ?? "";
+    });
+    _widget = StreamBuilder(
+      stream: refMember.onValue,
+      builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+        if (snapshot.hasData) {
+          mainCard.clear();
+          Map<dynamic, dynamic> map = snapshot.data.snapshot.value;
+          map.forEach((key, value) {
+            mainCard.add(MainCard(key, value['value']));
+            _controller.add(FlipCardController());
+          });
+          readData();
+          return GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3),
+            itemCount: mainCard.length,
+            itemBuilder: (context, index) {
+              return buildContainer(mainCard[index].name, mainCard[index].value,
+                  _controller[index]);
+            },
+          );
+        } else {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+      },
+    );
+    checkOut();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0.0,
-          centerTitle: true,
-          title: Text(
-            widget.lobbyKey,
-            style: const TextStyle(
-              color: Colors.pink,
-            ),
-          ),
-          leading: const BackButton(
-            color: Color.fromRGBO(225, 69, 140, 1.0),
-          ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            showModalBottomSheet<void>(
-              context: context,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(10.0),
-                    topRight: Radius.circular(10.0)),
+    return WillPopScope(
+        child: Scaffold(
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0.0,
+              centerTitle: true,
+              title: Text(
+                widget.lobbyKey,
+                style: const TextStyle(
+                  color: Colors.pink,
+                ),
               ),
-              builder: (BuildContext context) {
-                return bottomSheet(context);
-              },
-            );
-          },
-          child: const Icon(Icons.ad_units),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    " Results",
-                    style: TextStyle(
-                        fontSize: 18,
-                        color: Color.fromRGBO(36, 80, 150, 1.0),
-                        fontWeight: FontWeight.w500),
+              leading: IconButton(
+                icon: Icon(Icons.exit_to_app),
+                color: Color.fromRGBO(225, 69, 140, 1.0),
+                onPressed: () {
+                  name
+                      .then((value) => {
+                            if (value.isNotEmpty)
+                              {refMember.child(value).remove()}
+                          })
+                      .then((value) => Navigator.of(context).pop());
+                },
+              ),
+            ),
+            floatingActionButton: FloatingActionButton(
+              onPressed: () {
+                showModalBottomSheet<void>(
+                  context: context,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(10.0),
+                        topRight: Radius.circular(10.0)),
                   ),
-                  OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                        textStyle: const TextStyle(fontSize: 16),
-                        primary: const Color.fromRGBO(36, 80, 150, 1.0),
-                        side: const BorderSide(
-                          width: 2,
-                          color: Color.fromRGBO(36, 80, 150, 1.0),
-                        )),
-                    child: Text(showText),
-                    onPressed: () {
-                      updateStatus();
-                    },
-                  )
+                  builder: (BuildContext context) {
+                    return bottomSheet(context);
+                  },
+                );
+              },
+              child: const Icon(Icons.ad_units),
+            ),
+            body: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        " Results",
+                        style: TextStyle(
+                            fontSize: 18,
+                            color: Color.fromRGBO(36, 80, 150, 1.0),
+                            fontWeight: FontWeight.w500),
+                      ),
+                      OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                            textStyle: const TextStyle(fontSize: 16),
+                            primary: const Color.fromRGBO(36, 80, 150, 1.0),
+                            side: const BorderSide(
+                              width: 2,
+                              color: Color.fromRGBO(36, 80, 150, 1.0),
+                            )),
+                        child: Text(showText),
+                        onPressed: () {
+                          updateStatus();
+                        },
+                      )
+                    ],
+                  ),
+                  Expanded(child: _widget)
                 ],
               ),
-              Expanded(
-                child: StreamBuilder(
-                  stream: refMember.onValue,
-                  builder:
-                      (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-                    if (snapshot.hasData) {
-                      mainCard.clear();
-                      Map<dynamic, dynamic> map = snapshot.data.snapshot.value;
-                      map.forEach((key, value) {
-                        mainCard.add(MainCard(key, value['value']));
-                        _controller.add(FlipCardController());
-                      });
-                      return GridView.builder(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 3),
-                        itemCount: mainCard.length,
-                        itemBuilder: (context, index) {
-                          return buildContainer(mainCard[index].name,
-                              mainCard[index].value, _controller[index]);
-                        },
-                      );
-                    } else {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-                  },
-                ),
-              )
-            ],
-          ),
-        ));
+            )),
+        onWillPop: () async => false);
   }
 
   Container bottomSheet(BuildContext context) {
@@ -212,93 +227,120 @@ class _PokerPageState extends State<PokerPage> {
 
   Container buildContainer(String name, String value, controller) {
     return Container(
-        margin: const EdgeInsets.all(0),
-        width: 130,
-        height: 180,
-        child: FlipCard(
-          fill: Fill.fillBack,
-          flipOnTouch: false,
-          direction: FlipDirection.HORIZONTAL,
-          controller: controller,
-          front: Container(
-            child: Container(
-              child: Card(
-                  child: Container(
-                color: Colors.pink,
-                child: Center(
-                  child: Text(
-                    name,
-                    style: TextStyle(color: Colors.white),
-                  ),
+      margin: const EdgeInsets.all(0),
+      width: 130,
+      height: 180,
+      child: FlipCard(
+        fill: Fill.fillBack,
+        flipOnTouch: false,
+        direction: FlipDirection.HORIZONTAL,
+        controller: controller,
+        front: Card(
+          clipBehavior: Clip.antiAlias,
+          child: Container(
+            color: Colors.pink,
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.all(4),
+                child: Text(
+                  textAlign: TextAlign.center,
+                  name,
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16),
                 ),
-              )),
+              ),
             ),
           ),
-          back: Container(
+        ),
+        back: Card(
+          clipBehavior: Clip.antiAlias,
+          child: Container(
+            color: Color.fromRGBO(188, 188, 188, 1.0),
             child: Card(
                 child: Padding(
-              padding: EdgeInsets.all(16),
+              padding: EdgeInsets.all(8),
               child: Column(
                 children: [
                   Text(name),
                   Expanded(
                       child: Center(
-                    child: Text(value),
+                    child: Text(
+                        value,
+                        style: TextStyle(
+                            fontSize: 18,
+                          fontWeight: FontWeight.w500
+                        )
+                    ),
                   ))
                 ],
               ),
             )),
           ),
-        ));
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  void checkOut() async {
+    name.then((value) => {
+          if (value.isNotEmpty) {refMember.child(value).onDisconnect().remove()}
+        });
   }
 
   void updateNumber(String number) async {
-    final prefs = await SharedPreferences.getInstance();
-    String? name = prefs.getString('Name');
-
-    await refMember.update({
-      name!: {"value": number}
-    });
+    name.then((value) async => {
+          await refMember.update({
+            value: {"value": number}
+          })
+        });
   }
 
-  void readData() async {
-    mainCard.clear();
-    await ref.child("isShow").get().then((value) {
-      print("sfdsf");
-      handleFlip(value.value as bool);
+  void readData() {
+    ref.child("isShow").get().then((value) {
+      handleFlip(value.value!);
     });
 
     ref.onChildChanged.listen((event) {
-      //print(event.snapshot.value);
-      handleFlip(event.snapshot.value as bool);
+      handleFlip(event.snapshot.value!);
     });
   }
 
-  void updateStatus() async{
-   await ref.child("isShow").get().then((value) {
+  void updateStatus() {
+    ref.child("isShow").get().then((value) {
       ref.update({"isShow": !(value.value as bool)});
     });
   }
 
   void flipFront() {
-    for (var element in _controller) {
-      element.controller?.forward();
-    }
-    setState(() {
-      showText = "Show";
-    });
+    try {
+      for (var element in _controller) {
+        element.controller?.forward();
+      }
+      setState(() {
+        showText = "Hidden";
+      });
+    } catch (e) {}
   }
 
   void flipBack() {
-    for (var element in _controller) {
-      element.controller?.reverse();
-    }
-    setState(() {
-      showText = "Hidden";
-    });
+    try {
+      for (var element in _controller) {
+        element.controller?.reverse();
+      }
+      setState(() {
+        showText = "Show";
+      });
+    } catch (e) {}
   }
 
-  void handleFlip(bool status) {
+  void handleFlip(Object status) {
     if (status == true) {
       flipFront();
     } else {

@@ -47,10 +47,16 @@ class _HomeState extends State<Home> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final nameController = TextEditingController();
+  void initState() {
+    // TODO: implement initState
+    super.initState();
     checkName();
     getName();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final nameController = TextEditingController();
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 8,
