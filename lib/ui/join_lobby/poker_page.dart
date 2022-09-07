@@ -37,11 +37,18 @@ class _PokerPageState extends State<PokerPage> {
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
         if (snapshot.hasData) {
           mainCard.clear();
-          Map<dynamic, dynamic> map = snapshot.data.snapshot.value;
-          map.forEach((key, value) {
-            mainCard.add(MainCard(key, value['value']));
-            _controller.add(FlipCardController());
-          });
+          if( snapshot.data.snapshot.value != null){
+            Map<dynamic, dynamic> map = snapshot.data.snapshot.value;
+            map.forEach((key, value) {
+              mainCard.add(MainCard(key, value['value']));
+              _controller.add(FlipCardController());
+            });
+          }else{
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
           readData();
           return GridView.builder(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -85,7 +92,9 @@ class _PokerPageState extends State<PokerPage> {
                             if (value.isNotEmpty)
                               {refMember.child(value).remove()}
                           })
-                      .then((value) => Navigator.of(context).pop());
+                      .then((value) => print("")
+                      Navigator.of(context).pop()
+                  );
                 },
               ),
             ),
@@ -266,13 +275,9 @@ class _PokerPageState extends State<PokerPage> {
                   Text(name),
                   Expanded(
                       child: Center(
-                    child: Text(
-                        value,
+                    child: Text(value,
                         style: TextStyle(
-                            fontSize: 18,
-                          fontWeight: FontWeight.w500
-                        )
-                    ),
+                            fontSize: 18, fontWeight: FontWeight.w500)),
                   ))
                 ],
               ),
