@@ -2,7 +2,9 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:flip_card/flip_card_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:shalltear/models/main_card.dart';
+import 'package:shalltear/ui/join_lobby/history_lobby_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PokerPage extends StatefulWidget {
@@ -16,12 +18,14 @@ class PokerPage extends StatefulWidget {
 
 class _PokerPageState extends State<PokerPage> {
   late Future<String> name;
+  late bool isShow;
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   late final ref = FirebaseDatabase.instance.ref("lobby/${widget.lobbyKey}");
   late final refMember =
       FirebaseDatabase.instance.ref("lobby/${widget.lobbyKey}/members");
   List<MainCard> mainCard = [];
   final List _controller = [];
+  String selectedCard = "0";
   late DatabaseReference databaseReference;
   String showText = "Show";
   late StreamBuilder _widget;
@@ -37,13 +41,13 @@ class _PokerPageState extends State<PokerPage> {
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
         if (snapshot.hasData) {
           mainCard.clear();
-          if( snapshot.data.snapshot.value != null){
+          if (snapshot.data.snapshot.value != null) {
             Map<dynamic, dynamic> map = snapshot.data.snapshot.value;
             map.forEach((key, value) {
-              mainCard.add(MainCard(key, value['value']));
+              mainCard.add(MainCard(name : key,value : value['value']));
               _controller.add(FlipCardController());
             });
-          }else{
+          } else {
             return const Center(
               child: CircularProgressIndicator(),
             );
@@ -80,23 +84,36 @@ class _PokerPageState extends State<PokerPage> {
               title: Text(
                 widget.lobbyKey,
                 style: const TextStyle(
-                  color: Colors.pink,
+                  color: Color.fromRGBO(225, 69, 140, 1.0),
+                  fontSize: 26
                 ),
               ),
               leading: IconButton(
-                icon: Icon(Icons.exit_to_app),
-                color: Color.fromRGBO(225, 69, 140, 1.0),
+                icon: const Icon(Icons.exit_to_app),
+                color: const Color.fromRGBO(225, 69, 140, 1.0),
                 onPressed: () {
                   name
                       .then((value) => {
                             if (value.isNotEmpty)
                               {refMember.child(value).remove()}
                           })
-                      .then((value) => print("")
-                      Navigator.of(context).pop()
-                  );
+                      .then((value) => Navigator.of(context).pop());
                 },
               ),
+              actions : [
+              IconButton(
+                icon: const Icon(Icons.history),
+                color: const Color.fromRGBO(225, 69, 140, 1.0),
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              HistoryLobbyPage(lobbyKey: widget.lobbyKey,)));
+
+                },
+              ),
+              ],
             ),
             floatingActionButton: FloatingActionButton(
               onPressed: () {
@@ -150,87 +167,99 @@ class _PokerPageState extends State<PokerPage> {
         onWillPop: () async => false);
   }
 
-  Container bottomSheet(BuildContext context) {
-    return Container(
-        height: 250,
-        child: Padding(
-          padding: EdgeInsets.all(8),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  padding: EdgeInsets.all(16),
-                  width: 54,
-                  height: 8,
-                  decoration: BoxDecoration(
-                      color: Colors.black12,
-                      borderRadius: BorderRadius.all(Radius.circular(80))),
+
+  StatefulBuilder bottomSheet(BuildContext context) {
+    return StatefulBuilder(builder: (context, setState) {
+      return Container(
+          height: double.infinity,
+          child: Padding(
+            padding: EdgeInsets.all(8),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 8,),
+                Center(
+                  child: Container(
+                    padding: EdgeInsets.all(16),
+                    width: 54,
+                    height: 8,
+                    decoration: BoxDecoration(
+                        color: Colors.black12,
+                        borderRadius: BorderRadius.all(Radius.circular(80))),
+                  ),
                 ),
-              ),
-              SizedBox(
-                height: 8,
-              ),
-              Expanded(
-                child: ListView(
-                  // This next line does the trick.
-                  scrollDirection: Axis.horizontal,
-                  children: <Widget>[
-                    cardPoker("0"),
-                    cardPoker("1"),
-                    cardPoker("2"),
-                    cardPoker("3"),
-                    cardPoker("5"),
-                    cardPoker("8"),
-                    cardPoker("13"),
-                    cardPoker("coffee"),
-                  ],
-                ),
-              )
-            ],
-          ),
-        ));
+                const SizedBox(height: 16),
+                Expanded(
+                    child: GridView.count(
+                      crossAxisCount: 3,
+                      children: <Widget>[
+                        cardPoker("0",setState),
+                        cardPoker("1",setState),
+                        cardPoker("2",setState),
+                        cardPoker("3",setState),
+                        cardPoker("5",setState),
+                        cardPoker("8",setState),
+                        cardPoker("13",setState),
+                        cardPoker("coffee",setState),
+                        cardPoker("?",setState),
+                      ],
+                    ))
+              ],
+            ),
+          ));
+    },);
   }
 
-  GestureDetector cardPoker(String number) {
+  GestureDetector cardPoker(String number, StateSetter setState) {
     return GestureDetector(
       onTap: () {
         updateNumber(number);
+        setState(()=> selectedCard = number);
       },
-      child: Card(
-        margin: EdgeInsets.all(8),
-        clipBehavior: Clip.antiAlias,
-        child: Container(
-            color: Colors.pink[300],
-            width: 160.0,
-            child: Padding(
-              padding: EdgeInsets.all(8),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(number),
-                    ],
-                  ),
-                  Expanded(
-                      child: Center(
-                    child: Text(
-                      number,
-                      style: TextStyle(fontSize: 50),
-                    ),
-                  )),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text(number),
-                    ],
-                  ),
-                ],
+      child:Card(
+        child: ClipPath(
+          clipper: ShapeBorderClipper(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(3))),
+          child: Container(//
+            decoration: BoxDecoration(
+              border: Border(
+                left: BorderSide(color: selectedCard == number ? Colors.pink[400]!: Color.fromRGBO(222, 222, 222, 1), width: 5),
               ),
-            )),
-      ),
+            ),
+            child: Container(
+              width: 160.0,
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(number,style: const TextStyle(color: Colors.black45)),
+                      ],
+                    ),
+                    Expanded(
+                        child: Center(
+                          child: Text(
+                            number,
+                            style: const TextStyle(fontSize: 26,fontWeight: FontWeight.bold),
+                          ),
+                        )),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text(number,style: const TextStyle(color: Colors.black45)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      )
     );
   }
 
@@ -250,11 +279,11 @@ class _PokerPageState extends State<PokerPage> {
             color: Colors.pink,
             child: Center(
               child: Padding(
-                padding: EdgeInsets.all(4),
+                padding: const EdgeInsets.all(4),
                 child: Text(
                   textAlign: TextAlign.center,
                   name,
-                  style: TextStyle(
+                  style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: 16),
@@ -263,28 +292,30 @@ class _PokerPageState extends State<PokerPage> {
             ),
           ),
         ),
-        back: Card(
-          clipBehavior: Clip.antiAlias,
-          child: Container(
-            color: Color.fromRGBO(188, 188, 188, 1.0),
-            child: Card(
-                child: Padding(
-              padding: EdgeInsets.all(8),
-              child: Column(
-                children: [
-                  Text(name),
-                  Expanded(
-                      child: Center(
-                    child: Text(value,
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w500)),
-                  ))
-                ],
-              ),
-            )),
+        back:  Card(
+          shape: RoundedRectangleBorder(
+            side: BorderSide(
+              color: Color.fromRGBO(188, 188, 188, 1),
+            ),
+            borderRadius: BorderRadius.circular(8.0),
           ),
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Column(
+              children: [
+                Text(name),
+                Expanded(
+                    child: Center(
+                      child: Text(value,
+                          style: const TextStyle(
+                              fontSize: 24, fontWeight: FontWeight.w500)),
+                    ))
+              ],
+            ),
+          )
         ),
-      ),
+          ),
+
     );
   }
 
@@ -294,6 +325,10 @@ class _PokerPageState extends State<PokerPage> {
   }
 
   void checkOut() async {
+   ref.onChildChanged.listen((event) {
+      handleFlip(event.snapshot.value!);
+    });
+
     name.then((value) => {
           if (value.isNotEmpty) {refMember.child(value).onDisconnect().remove()}
         });
@@ -307,19 +342,19 @@ class _PokerPageState extends State<PokerPage> {
         });
   }
 
-  void readData() {
-    ref.child("isShow").get().then((value) {
+  void readData() async {
+   await ref.child("isShow").get().then((value) {
       handleFlip(value.value!);
     });
 
-    ref.onChildChanged.listen((event) {
-      handleFlip(event.snapshot.value!);
-    });
   }
 
-  void updateStatus() {
-    ref.child("isShow").get().then((value) {
-      ref.update({"isShow": !(value.value as bool)});
+  void updateStatus() async{
+   await ref.child("isShow").get().then((value) async {
+      if(value.value != true){
+        saveHistoryLog();
+      }
+     await ref.update({"isShow": !(value.value as bool)});
     });
   }
 
@@ -352,4 +387,12 @@ class _PokerPageState extends State<PokerPage> {
       flipBack();
     }
   }
-}
+  void saveHistoryLog() async{
+    var dateTime = DateFormat('dd/MM/yyy HH:mm').format(DateTime.now());
+    await ref.child("historyLog").push().set({
+      "dateTime" : dateTime,
+       "log" : mainCard.map((e) => e.toJson()).toList()
+    });
+  }
+  }
+

@@ -13,7 +13,7 @@ class _HomeState extends State<Info> {
     return const Scaffold(
       body: Center(
         child: Text(
-            "test Info"
+            "About"
         ),
       ),
     );

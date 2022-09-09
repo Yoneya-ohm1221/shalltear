@@ -92,7 +92,7 @@ class _HomeState extends State<Home> {
                     Text(
                       txtName,
                       style:
-                          TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
+                          const TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
                     ),
                     IconButton(
                         onPressed: () {
@@ -159,10 +159,7 @@ class _HomeState extends State<Home> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Image(
-                                        image: NetworkImage(
-                                            "https://cdn.discordapp.com/attachments/802932825887866904/1010827213484077116/coffee.png"),
-                                        width: 35),
+                                    Image.asset("images/coffee.png",scale: 20),
                                     AnimatedButton(
                                       onPressed: () {
                                         Navigator.push(
@@ -234,10 +231,7 @@ class _HomeState extends State<Home> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Image(
-                                        image: NetworkImage(
-                                            "https://cdn.discordapp.com/attachments/802932825887866904/1010828909975175238/barista.png"),
-                                        width: 35),
+                                     Image.asset("images/barista.png",scale: 20),
                                     AnimatedButton(
                                       onPressed: () {
                                         Navigator.push(
@@ -303,6 +297,7 @@ class _HomeState extends State<Home> {
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
+              maxLength: 8,
               decoration: InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Enter Name Here',
