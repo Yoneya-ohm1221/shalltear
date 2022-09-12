@@ -21,13 +21,12 @@ class _HistoryLobbyPageState extends State<HistoryLobbyPage> {
   List<History> historyLog = [];
   String a = "22";
 
-  final List<String> entries = <String>['A', 'B', 'C'];
+  final List<String> entries = <String>['Awfww: 80', 'Awfww: 80', 'Awfww: 80', 'Awfww: 80', 'Awfww: 80', 'Aww: 80', 'Awfww: 80'];
   final List<int> colorCodes = <int>[600, 500, 100];
 
   @override
   void initState() {
     super.initState();
-    test();
     _widget = StreamBuilder(
       stream: ref.onValue,
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
@@ -44,58 +43,50 @@ class _HistoryLobbyPageState extends State<HistoryLobbyPage> {
             child: CircularProgressIndicator(),
           );
         }
-        return ListView(
-          children: [
-            Container(
-              color: Colors.red,
-              height: 150.0,
-              width: double.infinity,
-              child: Center(
-                  child: Text("2", style: const TextStyle(fontSize: 20.0))),
-            ),
-            FutureBuilder(
-                builder: (BuildContext context, AsyncSnapshot snapshot) {
-                  if (snapshot.data == null) {
-                    return const Center(
-                      child: Text('Loading...'),
-                    );
-                  } else {
-                    return SizedBox(
-                      height: 200.0,
-                      child: ListView.builder(
-                          shrinkWrap:true,
-                          itemCount: snapshot.data.length,
-                          itemBuilder:
-                              (BuildContext context, int mistakeIdIndex) {
-                            return ListView(
-                              shrinkWrap:true,
-                              children: [
-                                Text(snapshot
-                                    .data[mistakeIdIndex].issueDescription),
-                                // this is where the problems begin
-                                ListView.builder(
-                                    shrinkWrap:true,
-                                    itemCount: snapshot.data[mistakeIdIndex]
-                                        .replacements.length,
-                                    scrollDirection: Axis.horizontal,
-                                    itemBuilder:
-                                        (BuildContext context, int index) {
-                                      return Text(snapshot.data[mistakeIdIndex]
-                                          .replacements[index]);
-                                    }),
-                              ],
-                            );
-                          }),
-                    );
-                  }
-                }),
-          ],
+        return ListView.builder(
+          itemCount: historyLog.length,
+          itemBuilder: (context, index) {
+            return Container(
+              padding: EdgeInsets.all(8),
+              height: 120,
+              child: Card(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(historyLog[index].dateTime),
+                    Wrap(
+                      children: [
+                        for ( var i in entries ) Text(i.toString())
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            );
+          },
         );
       },
     );
 
     //print(historyLog[0].dateTime);
   }
+
+
+  ListView listView() => ListView.builder(
+        scrollDirection: Axis.horizontal,
+        shrinkWrap: true,
+        itemCount: entries.length,
+        itemBuilder: (context, index) {
+          return Card(
+                child: Container(
+                  width: 200,
+                  child: Center(
+                    child: Text(entries[index]),
+                  ),
+                )
+          );
+        },
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -110,15 +101,5 @@ class _HistoryLobbyPageState extends State<HistoryLobbyPage> {
           ),
         ),
         body: _widget);
-  }
-
-  void test() {
-    var snapshot = ref.onValue.listen((event) {
-      print(event.snapshot.value);
-    });
-
-
-
-
   }
 }
