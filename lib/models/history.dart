@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/cupertino.dart';
 import 'package:shalltear/models/main_card.dart';
 
 
@@ -7,18 +6,21 @@ History historyFromJson(String str) => History.fromJson(json.decode(str));
 String historyToJson(History data) => json.encode(data.toJson());
 
 class History{
-   String dateTime;
+   String date;
+   String time;
    List<MainCard> log;
 
-   History({required this.dateTime,required this.log});
+   History({required this.date,required this.time,required this.log});
 
    factory History.fromJson(Map<String, dynamic> json) => History(
-      dateTime: json["dateTime"],
+      date: json["date"],
+      time: json["time"],
       log: List<MainCard>.from(json["log"].map((x) => MainCard.fromJson(x))),
    );
 
    Map<String, dynamic> toJson() => {
-      "dateTime": dateTime,
+      "date": date,
+      "time" : time,
       "log": List<dynamic>.from(log.map((x) => x.toJson())),
    };
 

@@ -18,7 +18,6 @@ class PokerPage extends StatefulWidget {
 
 class _PokerPageState extends State<PokerPage> {
   late Future<String> name;
-  late bool isShow;
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   late final ref = FirebaseDatabase.instance.ref("lobby/${widget.lobbyKey}");
   late final refMember =
@@ -36,6 +35,7 @@ class _PokerPageState extends State<PokerPage> {
     name = _prefs.then((SharedPreferences prefs) {
       return prefs.getString('Name') ?? "";
     });
+
     _widget = StreamBuilder(
       stream: refMember.onValue,
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
@@ -44,7 +44,7 @@ class _PokerPageState extends State<PokerPage> {
           if (snapshot.data.snapshot.value != null) {
             Map<dynamic, dynamic> map = snapshot.data.snapshot.value;
             map.forEach((key, value) {
-              mainCard.add(MainCard(name : key,value : value['value']));
+              mainCard.add(MainCard(name: key, value: value['value']));
               _controller.add(FlipCardController());
             });
           } else {
@@ -54,6 +54,7 @@ class _PokerPageState extends State<PokerPage> {
           }
 
           readData();
+
           return GridView.builder(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3),
@@ -84,9 +85,7 @@ class _PokerPageState extends State<PokerPage> {
               title: Text(
                 widget.lobbyKey,
                 style: const TextStyle(
-                  color: Color.fromRGBO(225, 69, 140, 1.0),
-                  fontSize: 26
-                ),
+                    color: Color.fromRGBO(225, 69, 140, 1.0), fontSize: 26),
               ),
               leading: IconButton(
                 icon: const Icon(Icons.exit_to_app),
@@ -100,19 +99,19 @@ class _PokerPageState extends State<PokerPage> {
                       .then((value) => Navigator.of(context).pop());
                 },
               ),
-              actions : [
-              IconButton(
-                icon: const Icon(Icons.history),
-                color: const Color.fromRGBO(225, 69, 140, 1.0),
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              HistoryLobbyPage(lobbyKey: widget.lobbyKey,)));
-
-                },
-              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.history),
+                  color: const Color.fromRGBO(225, 69, 140, 1.0),
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => HistoryLobbyPage(
+                                  lobbyKey: widget.lobbyKey,
+                                )));
+                  },
+                ),
               ],
             ),
             floatingActionButton: FloatingActionButton(
@@ -156,6 +155,9 @@ class _PokerPageState extends State<PokerPage> {
                         child: Text(showText),
                         onPressed: () {
                           updateStatus();
+                          if(showText == "Show"){
+                            saveHistoryLog();
+                          }
                         },
                       )
                     ],
@@ -167,100 +169,110 @@ class _PokerPageState extends State<PokerPage> {
         onWillPop: () async => false);
   }
 
-
   StatefulBuilder bottomSheet(BuildContext context) {
-    return StatefulBuilder(builder: (context, setState) {
-      return Container(
-          height: double.infinity,
-          child: Padding(
-            padding: EdgeInsets.all(8),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 8,),
-                Center(
-                  child: Container(
-                    padding: EdgeInsets.all(16),
-                    width: 54,
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return SizedBox(
+            height: double.infinity,
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(
                     height: 8,
-                    decoration: BoxDecoration(
-                        color: Colors.black12,
-                        borderRadius: BorderRadius.all(Radius.circular(80))),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Expanded(
-                    child: GridView.count(
-                      crossAxisCount: 3,
-                      children: <Widget>[
-                        cardPoker("0",setState),
-                        cardPoker("1",setState),
-                        cardPoker("2",setState),
-                        cardPoker("3",setState),
-                        cardPoker("5",setState),
-                        cardPoker("8",setState),
-                        cardPoker("13",setState),
-                        cardPoker("coffee",setState),
-                        cardPoker("?",setState),
-                      ],
-                    ))
-              ],
-            ),
-          ));
-    },);
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      width: 54,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                          color: Colors.black12,
+                          borderRadius: BorderRadius.all(Radius.circular(80))),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                      child: GridView.count(
+                    crossAxisCount: 3,
+                    children: <Widget>[
+                      cardPoker("0", setState),
+                      cardPoker("1", setState),
+                      cardPoker("2", setState),
+                      cardPoker("3", setState),
+                      cardPoker("5", setState),
+                      cardPoker("8", setState),
+                      cardPoker("13", setState),
+                      cardPoker("coffee", setState),
+                      cardPoker("?", setState),
+                    ],
+                  ))
+                ],
+              ),
+            ));
+      },
+    );
   }
 
   GestureDetector cardPoker(String number, StateSetter setState) {
     return GestureDetector(
-      onTap: () {
-        updateNumber(number);
-        setState(()=> selectedCard = number);
-      },
-      child:Card(
-        child: ClipPath(
-          clipper: ShapeBorderClipper(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(3))),
-          child: Container(//
-            decoration: BoxDecoration(
-              border: Border(
-                left: BorderSide(color: selectedCard == number ? Colors.pink[400]!: Color.fromRGBO(222, 222, 222, 1), width: 5),
-              ),
-            ),
+        onTap: () {
+          updateNumber(number);
+          setState(() => selectedCard = number);
+        },
+        child: Card(
+          child: ClipPath(
+            clipper: ShapeBorderClipper(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(3))),
             child: Container(
-              width: 160.0,
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Text(number,style: const TextStyle(color: Colors.black45)),
-                      ],
-                    ),
-                    Expanded(
-                        child: Center(
-                          child: Text(
-                            number,
-                            style: const TextStyle(fontSize: 26,fontWeight: FontWeight.bold),
-                          ),
-                        )),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text(number,style: const TextStyle(color: Colors.black45)),
-                      ],
-                    ),
-                  ],
+              //
+              decoration: BoxDecoration(
+                border: Border(
+                  left: BorderSide(
+                      color: selectedCard == number
+                          ? Colors.pink[400]!
+                          : const Color.fromRGBO(222, 222, 222, 1),
+                      width: 5),
+                ),
+              ),
+              child: SizedBox(
+                width: 160.0,
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(number,
+                              style: const TextStyle(color: Colors.black45)),
+                        ],
+                      ),
+                      Expanded(
+                          child: Center(
+                        child: Text(
+                          number,
+                          style: const TextStyle(
+                              fontSize: 26, fontWeight: FontWeight.bold),
+                        ),
+                      )),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(number,
+                              style: const TextStyle(color: Colors.black45)),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      )
-    );
+        ));
   }
 
   Container buildContainer(String name, String value, controller) {
@@ -292,30 +304,28 @@ class _PokerPageState extends State<PokerPage> {
             ),
           ),
         ),
-        back:  Card(
-          shape: RoundedRectangleBorder(
-            side: BorderSide(
-              color: Color.fromRGBO(188, 188, 188, 1),
+        back: Card(
+            shape: RoundedRectangleBorder(
+              side: const BorderSide(
+                color: Color.fromRGBO(188, 188, 188, 1),
+              ),
+              borderRadius: BorderRadius.circular(8.0),
             ),
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Column(
-              children: [
-                Text(name),
-                Expanded(
-                    child: Center(
-                      child: Text(value,
-                          style: const TextStyle(
-                              fontSize: 24, fontWeight: FontWeight.w500)),
-                    ))
-              ],
-            ),
-          )
-        ),
-          ),
-
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                children: [
+                  Text(name),
+                  Expanded(
+                      child: Center(
+                    child: Text(value,
+                        style: const TextStyle(
+                            fontSize: 24, fontWeight: FontWeight.w500)),
+                  ))
+                ],
+              ),
+            )),
+      ),
     );
   }
 
@@ -325,8 +335,8 @@ class _PokerPageState extends State<PokerPage> {
   }
 
   void checkOut() async {
-   ref.onChildChanged.listen((event) {
-      handleFlip(event.snapshot.value!);
+    ref.child("isShow").onValue.listen((event) {
+      handleFlip(event.snapshot.value);
     });
 
     name.then((value) => {
@@ -343,56 +353,57 @@ class _PokerPageState extends State<PokerPage> {
   }
 
   void readData() async {
-   await ref.child("isShow").get().then((value) {
+    await ref.child("isShow").get().then((value) async {
       handleFlip(value.value!);
     });
-
   }
 
-  void updateStatus() async{
-   await ref.child("isShow").get().then((value) async {
-      if(value.value != true){
-        saveHistoryLog();
-      }
-     await ref.update({"isShow": !(value.value as bool)});
+  void updateStatus() async {
+    await ref.child("isShow").get().then((value) {
+      ref.update({"isShow": !(value.value as bool)});
     });
   }
 
-  void flipFront() {
+  Future<void> flipFront() async {
     try {
       for (var element in _controller) {
         element.controller?.forward();
       }
+    } finally {
       setState(() {
         showText = "Hidden";
       });
-    } catch (e) {}
+    }
   }
 
-  void flipBack() {
+  Future<void> flipBack() async {
     try {
       for (var element in _controller) {
         element.controller?.reverse();
       }
+    } finally {
       setState(() {
         showText = "Show";
       });
-    } catch (e) {}
-  }
-
-  void handleFlip(Object status) {
-    if (status == true) {
-      flipFront();
-    } else {
-      flipBack();
     }
   }
-  void saveHistoryLog() async{
-    var dateTime = DateFormat('dd/MM/yyy HH:mm').format(DateTime.now());
-    await ref.child("historyLog").push().set({
-      "dateTime" : dateTime,
-       "log" : mainCard.map((e) => e.toJson()).toList()
-    });
-  }
+
+  void handleFlip(Object? status) async {
+
+    if (status == true) {
+      await flipFront();
+    } else {
+      await flipBack();
+    }
   }
 
+  void saveHistoryLog() {
+    var currentDate = DateFormat('dd/MM/yyy').format(DateTime.now());
+    var currentTime = DateFormat('HH:mm').format(DateTime.now());
+    ref.child("historyLog").push().set({
+      "date": currentDate,
+      "time": currentTime,
+      "log": mainCard.map((e) => e.toJson()).toList()
+    });
+  }
+}
