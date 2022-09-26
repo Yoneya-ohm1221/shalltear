@@ -25,114 +25,128 @@ class _HistoryLobbyPageState extends State<HistoryLobbyPage> {
   @override
   void initState() {
     super.initState();
-    //test();
     _widget = StreamBuilder(
       stream: ref.onValue,
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
         if (snapshot.hasData) {
-          Map<String, dynamic> map =
-              jsonDecode(jsonEncode(snapshot.data.snapshot.value));
-          historyLog.clear();
-          map.forEach((key, value) {
-            var data = jsonDecode(jsonEncode(value));
-            historyLog.add(History.fromJson(data));
-          });
-        } else {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-
-        return Padding(
-          padding: const EdgeInsets.only(
-            bottom: 0,
-          ),
-          child: GroupedListView<dynamic, String>(
-            elements: historyLog,
-            groupBy: (element) => element.date,
-            order: GroupedListOrder.DESC,
-            groupSeparatorBuilder: (String groupByValue) => Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Padding(
-                  padding: EdgeInsets.only(bottom: 2, top: 2),
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                      side: const BorderSide(
+          if (snapshot.data.snapshot.value != null) {
+            readData();
+            return Padding(
+              padding: const EdgeInsets.only(
+                bottom: 0,
+              ),
+              child: GroupedListView<dynamic, String>(
+                elements: historyLog,
+                groupBy: (element) => element.date,
+                order: GroupedListOrder.DESC,
+                groupSeparatorBuilder: (String groupByValue) => Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 2, top: 2),
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                            color: Colors.pinkAccent,
+                            width: 1.5,
+                          ),
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
                         color: Colors.pinkAccent,
-                        width: 1.5,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Text(groupByValue,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold)),
+                        ),
                       ),
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    color: Colors.pinkAccent,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Text(
-                          groupByValue,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold)),
-                    ),
-                  ),
-                )
-              ],
-            ),
-            itemBuilder: (context, dynamic element) => Padding(
-              padding: const EdgeInsets.only(left: 8, right: 8, top: 2),
-              child: Card(
-                child: ClipPath(
-                  clipper: ShapeBorderClipper(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(3))),
-                  child: Container(
-                    padding: const EdgeInsets.only(bottom: 4, right: 4, top: 4),
-                    decoration: const BoxDecoration(
-                      border: Border(
-                        left: BorderSide(color: Colors.pinkAccent, width: 5),
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(6),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    )
+                  ],
+                ),
+                itemBuilder: (context, dynamic element) => Padding(
+                  padding: const EdgeInsets.only(left: 8, right: 8, top: 2),
+                  child: Card(
+                    child: ClipPath(
+                      clipper: ShapeBorderClipper(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(3))),
+                      child: Container(
+                        padding:
+                            const EdgeInsets.only(bottom: 4, right: 4, top: 4),
+                        decoration: const BoxDecoration(
+                          border: Border(
+                            left:
+                                BorderSide(color: Colors.pinkAccent, width: 5),
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(6),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(" History",
-                                  style: TextStyle(
-                                      color: Colors.black45,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13)),
-                              Text(element.time,
-                                  style: const TextStyle(
-                                      color: Colors.black45,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13))
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text(" History",
+                                      style: TextStyle(
+                                          color: Colors.black45,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13)),
+                                  Text(element.time,
+                                      style: const TextStyle(
+                                          color: Colors.black45,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13))
+                                ],
+                              ),
+                              const SizedBox(
+                                height: 8,
+                              ),
+                              Wrap(
+                                children: [
+                                  for (var data in element.log) cardList(data)
+                                ],
+                              ),
                             ],
                           ),
-                          const SizedBox(
-                            height: 8,
-                          ),
-                          Wrap(
-                            children: [
-                              for (var data in element.log) cardList(data)
-                            ],
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
-        );
+            );
+          } else {
+            return Center(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(
+                    Icons.hourglass_empty,
+                    size: 100,
+                    color: Colors.black26,
+                  ),
+                  Text(
+                    "History is empty",
+                    style: TextStyle(
+                        color: Colors.black26, fontWeight: FontWeight.w500),
+                  ),
+                  SizedBox(height: 80,)
+                ],
+              ),
+            );
+          }
+        } else {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
       },
     );
-
-    //print(historyLog[0].dateTime);
   }
 
   Card cardList(MainCard data) {
@@ -184,5 +198,10 @@ class _HistoryLobbyPageState extends State<HistoryLobbyPage> {
         body: _widget);
   }
 
+  void readData() {
+    ref.onChildAdded.listen((event) {
+      var data = jsonDecode(jsonEncode(event.snapshot.value));
+      historyLog.add(History.fromJson(data));
+    });
+  }
 }
-

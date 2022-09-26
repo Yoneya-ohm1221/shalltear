@@ -46,24 +46,25 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: screen[currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "Home",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.info),
-            label: "About",
-          ),
-        ],
-        currentIndex: currentIndex,
-        onTap: (index) => setState(() {
-          currentIndex = index;
-        }),
-      ),
+    return const Scaffold(
+      body: Home(),
+      // body: screen[currentIndex],
+      // bottomNavigationBar: BottomNavigationBar(
+      //   items: const [
+      //     BottomNavigationBarItem(
+      //       icon: Icon(Icons.home),
+      //       label: "Home",
+      //     ),
+      //     BottomNavigationBarItem(
+      //       icon: Icon(Icons.info),
+      //       label: "About",
+      //     ),
+      //   ],
+      //   currentIndex: currentIndex,
+      //   onTap: (index) => setState(() {
+      //     currentIndex = index;
+      //   }),
+      // ),
     );
   }
 }

@@ -44,6 +44,12 @@ dependencies:
   flip_card: ^0.6.0
   intl: ^0.17.0
   grouped_list: ^5.1.2
+  flutter_launcher_icons: ^0.10.0
+  flutter_native_splash: ^2.2.9
+
+flutter_native_splash:
+  color: "#ffffff"
+  image: "assets/images/logo3.png"
 
 dev_dependencies:
   flutter_test:
@@ -55,6 +61,14 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
+
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/logo3.png"
+  remove_alpha_ios: true
+  min_sdk_android: 23
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

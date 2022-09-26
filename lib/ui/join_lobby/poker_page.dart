@@ -155,7 +155,7 @@ class _PokerPageState extends State<PokerPage> {
                         child: Text(showText),
                         onPressed: () {
                           updateStatus();
-                          if(showText == "Show"){
+                          if (showText == "Show") {
                             saveHistoryLog();
                           }
                         },
@@ -367,29 +367,38 @@ class _PokerPageState extends State<PokerPage> {
   Future<void> flipFront() async {
     try {
       for (var element in _controller) {
-        element.controller?.forward();
+        if (mounted) {
+          element.controller?.forward();
+        }
       }
     } finally {
-      setState(() {
-        showText = "Hidden";
-      });
+      if(mounted) {
+        setState(() {
+          showText = "Hidden";
+        });
+      }
+
     }
   }
 
   Future<void> flipBack() async {
     try {
       for (var element in _controller) {
-        element.controller?.reverse();
+        if (mounted) {
+          element.controller?.reverse();
+        }
       }
     } finally {
-      setState(() {
-        showText = "Show";
-      });
+      if(mounted) {
+        setState(() {
+          showText = "Show";
+        });
+      }
+
     }
   }
 
   void handleFlip(Object? status) async {
-
     if (status == true) {
       await flipFront();
     } else {
@@ -403,6 +412,7 @@ class _PokerPageState extends State<PokerPage> {
     ref.child("historyLog").push().set({
       "date": currentDate,
       "time": currentTime,
+      "timestamp": ServerValue.timestamp,
       "log": mainCard.map((e) => e.toJson()).toList()
     });
   }
