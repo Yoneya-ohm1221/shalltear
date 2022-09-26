@@ -25,12 +25,13 @@ class _HistoryLobbyPageState extends State<HistoryLobbyPage> {
   @override
   void initState() {
     super.initState();
+    readData();
     _widget = StreamBuilder(
       stream: ref.onValue,
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
         if (snapshot.hasData) {
           if (snapshot.data.snapshot.value != null) {
-            readData();
+            print(historyLog);
             return Padding(
               padding: const EdgeInsets.only(
                 bottom: 0,
