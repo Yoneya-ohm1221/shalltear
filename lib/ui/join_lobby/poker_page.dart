@@ -3,7 +3,6 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:flip_card/flip_card_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:shalltear/models/main_card.dart';
 import 'package:shalltear/ui/join_lobby/history_lobby_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -149,8 +148,7 @@ class _PokerPageState extends State<PokerPage> {
                       ),
                       OutlinedButton(
                         style: OutlinedButton.styleFrom(
-                            foregroundColor:
-                                const Color.fromRGBO(36, 80, 150, 1.0),
+                            primary: const Color.fromRGBO(36, 80, 150, 1.0),
                             textStyle: const TextStyle(fontSize: 16),
                             side: const BorderSide(
                               width: 2,
@@ -409,26 +407,15 @@ class _PokerPageState extends State<PokerPage> {
     }
   }
 
-  // void saveHistoryLog() {
-  //   var currentDate = DateFormat('dd/MM/yyy').format(DateTime.now());
-  //   var currentTime = DateFormat('HH:mm').format(DateTime.now());
-  //   ref.child("historyLog").push().set({
-  //     "date": currentDate,
-  //     "time": currentTime,
-  //     "timestamp": ServerValue.timestamp,
-  //     "log": mainCard.map((e) => e.toJson()).toList()
-  //   });
-  // }
-
   Future<void> saveHistoryLog(String lobbyKey) {
-    var currentDate = DateFormat('dd/MM/yyy').format(DateTime.now());
-    var currentTime = DateFormat('HH:mm').format(DateTime.now());
+    var now = DateTime.now();
+
+    var milliseconds = now.millisecondsSinceEpoch;
     return FirebaseFirestore.instance
         .collection(lobbyKey)
         .doc()
         .set({
-          "date": currentDate,
-          "time": currentTime,
+          "timestamp": milliseconds,
           "log": mainCard.map((e) => e.toJson()).toList()
         })
         .then((value) => print("User Added"))
