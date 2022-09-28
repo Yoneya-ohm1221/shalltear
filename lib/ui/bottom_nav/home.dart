@@ -71,7 +71,7 @@ class _HomeState extends State<Home> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  "Poker Hunter",
+                  "ScrumPoker",
                   style: TextStyle(
                     color: Colors.black,
                     fontSize: 22,
@@ -118,7 +118,7 @@ class _HomeState extends State<Home> {
                                 );
                               });
                         },
-                        icon: Icon(Icons.edit))
+                        icon: const Icon(Icons.edit))
                   ],
                 ),
                 SizedBox(
@@ -201,7 +201,7 @@ class _HomeState extends State<Home> {
                     child: GestureDetector(
                       onTap: () {},
                       child: Card(
-                          color: Color.fromRGBO(36, 80, 150, 1.0),
+                          color: const Color.fromRGBO(36, 80, 150, 1.0),
                           shape: BeveledRectangleBorder(
                             borderRadius: BorderRadius.circular(10.0),
                           ),
@@ -291,7 +291,7 @@ class _HomeState extends State<Home> {
                       Navigator.pop(context);
                     }
                   },
-                  icon: Icon(Icons.done))
+                  icon: const Icon(Icons.done))
             ],
           ),
           Padding(
@@ -299,7 +299,7 @@ class _HomeState extends State<Home> {
             child: TextField(
               maxLength: 8,
               decoration: InputDecoration(
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
                 labelText: 'Enter Name Here',
                 hintText: 'Enter Name Here',
                 errorText: validateName ? 'Name Can\'t Be Empty' : "",

@@ -10,6 +10,7 @@ class History{
    String time;
    List<MainCard> log;
 
+
    History({required this.date,required this.time,required this.log});
 
    factory History.fromJson(Map<String, dynamic> json) => History(

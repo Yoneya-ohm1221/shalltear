@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:flip_card/flip_card_controller.dart';
@@ -19,6 +20,8 @@ class PokerPage extends StatefulWidget {
 class _PokerPageState extends State<PokerPage> {
   late Future<String> name;
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+  CollectionReference logs =
+      FirebaseFirestore.instance.collection('historyLog');
   late final ref = FirebaseDatabase.instance.ref("lobby/${widget.lobbyKey}");
   late final refMember =
       FirebaseDatabase.instance.ref("lobby/${widget.lobbyKey}/members");
@@ -146,8 +149,9 @@ class _PokerPageState extends State<PokerPage> {
                       ),
                       OutlinedButton(
                         style: OutlinedButton.styleFrom(
+                            foregroundColor:
+                                const Color.fromRGBO(36, 80, 150, 1.0),
                             textStyle: const TextStyle(fontSize: 16),
-                            primary: const Color.fromRGBO(36, 80, 150, 1.0),
                             side: const BorderSide(
                               width: 2,
                               color: Color.fromRGBO(36, 80, 150, 1.0),
@@ -156,7 +160,7 @@ class _PokerPageState extends State<PokerPage> {
                         onPressed: () {
                           updateStatus();
                           if (showText == "Show") {
-                            saveHistoryLog();
+                            saveHistoryLog(widget.lobbyKey);
                           }
                         },
                       )
@@ -332,6 +336,7 @@ class _PokerPageState extends State<PokerPage> {
   @override
   void dispose() {
     super.dispose();
+    _controller.clear();
   }
 
   void checkOut() async {
@@ -372,12 +377,11 @@ class _PokerPageState extends State<PokerPage> {
         }
       }
     } finally {
-      if(mounted) {
+      if (mounted) {
         setState(() {
           showText = "Hidden";
         });
       }
-
     }
   }
 
@@ -389,12 +393,11 @@ class _PokerPageState extends State<PokerPage> {
         }
       }
     } finally {
-      if(mounted) {
+      if (mounted) {
         setState(() {
           showText = "Show";
         });
       }
-
     }
   }
 
@@ -406,14 +409,29 @@ class _PokerPageState extends State<PokerPage> {
     }
   }
 
-  void saveHistoryLog() {
+  // void saveHistoryLog() {
+  //   var currentDate = DateFormat('dd/MM/yyy').format(DateTime.now());
+  //   var currentTime = DateFormat('HH:mm').format(DateTime.now());
+  //   ref.child("historyLog").push().set({
+  //     "date": currentDate,
+  //     "time": currentTime,
+  //     "timestamp": ServerValue.timestamp,
+  //     "log": mainCard.map((e) => e.toJson()).toList()
+  //   });
+  // }
+
+  Future<void> saveHistoryLog(String lobbyKey) {
     var currentDate = DateFormat('dd/MM/yyy').format(DateTime.now());
     var currentTime = DateFormat('HH:mm').format(DateTime.now());
-    ref.child("historyLog").push().set({
-      "date": currentDate,
-      "time": currentTime,
-      "timestamp": ServerValue.timestamp,
-      "log": mainCard.map((e) => e.toJson()).toList()
-    });
+    return FirebaseFirestore.instance
+        .collection(lobbyKey)
+        .doc()
+        .set({
+          "date": currentDate,
+          "time": currentTime,
+          "log": mainCard.map((e) => e.toJson()).toList()
+        })
+        .then((value) => print("User Added"))
+        .catchError((error) => print("Failed to add user: $error"));
   }
 }
