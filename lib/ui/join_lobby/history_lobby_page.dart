@@ -21,52 +21,20 @@ class _HistoryLobbyPageState extends State<HistoryLobbyPage> {
       FirebaseDatabase.instance.ref("lobby/${widget.lobbyKey}/historyLog");
   late final CollectionReference logs =
       FirebaseFirestore.instance.collection(widget.lobbyKey);
-  late FutureBuilder _widget;
   List<History> historyLog = [];
+
 
   @override
   void initState() {
     super.initState();
-    _widget = FutureBuilder(
-      future: readData(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else {
-          if (historyLog.isNotEmpty) {
-            return groupedListView();
-          }else{
-            return Center(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Icon(
-                    Icons.hourglass_empty,
-                    size: 100,
-                    color: Colors.black26,
-                  ),
-                  Text(
-                    "History is empty",
-                    style: TextStyle(
-                        color: Colors.black26, fontWeight: FontWeight.w500),
-                  ),
-                  SizedBox(
-                    height: 80,
-                  )
-                ],
-              ),
-            );
-          }
-        }
-      },
-    );
+
   }
 
   GroupedListView<dynamic, String> groupedListView() {
     return GroupedListView<dynamic, String>(
       elements: historyLog,
       groupBy: (element) => getDate(element.timestamp),
+      groupComparator: (value1, value2) => value2.compareTo(value1),
       groupSeparatorBuilder: (String groupByValue) {
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -145,7 +113,7 @@ class _HistoryLobbyPageState extends State<HistoryLobbyPage> {
           ),
         );
       },
-      order: GroupedListOrder.DESC, // optional
+      // order: GroupedListOrder.DESC, // optional
     );
   }
 
@@ -195,12 +163,67 @@ class _HistoryLobbyPageState extends State<HistoryLobbyPage> {
             color: Colors.pinkAccent,
           ),
         ),
-        body: _widget);
+        body: FutureBuilder(
+          future: initData(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else {
+              if (historyLog.isNotEmpty) {
+                return RefreshIndicator(
+                    onRefresh: _refreshData,
+                    child: groupedListView());
+              } else {
+                return Center(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(
+                        Icons.hourglass_empty,
+                        size: 100,
+                        color: Colors.black26,
+                      ),
+                      Text(
+                        "History is empty",
+                        style: TextStyle(
+                            color: Colors.black26, fontWeight: FontWeight.w500),
+                      ),
+                      SizedBox(
+                        height: 80,
+                      )
+                    ],
+                  ),
+                );
+              }
+            }
+          },
+        )
+
+    );
   }
 
-  Future<void> readData() async {
+  Future<void> _refreshData() async {
+    List<History> _tempHistoryLog =[];
     await logs
-        .orderBy('timestamp', descending: false)
+        .orderBy('timestamp', descending: true)
+        .get()
+        .then((QuerySnapshot querySnapshot) {
+      for (var doc in querySnapshot.docs) {
+        var data = jsonDecode(jsonEncode(doc.data()));
+        _tempHistoryLog.add(History.fromJson(data));
+      }
+    });
+
+    setState(() {
+      historyLog.clear();
+      historyLog.addAll(_tempHistoryLog);
+    });
+  }
+
+  Future<void> initData() async {
+    await logs
+        .orderBy('timestamp', descending: true)
         .get()
         .then((QuerySnapshot querySnapshot) {
       historyLog.clear();

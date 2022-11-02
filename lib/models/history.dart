@@ -6,7 +6,7 @@ History historyFromJson(String str) => History.fromJson(json.decode(str));
 String historyToJson(History data) => json.encode(data.toJson());
 
 class History {
-  int timestamp;
+  dynamic timestamp;
   List<MainCard> log;
 
   History({required this.log, required this.timestamp});

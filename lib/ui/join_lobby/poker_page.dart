@@ -409,7 +409,6 @@ class _PokerPageState extends State<PokerPage> {
 
   Future<void> saveHistoryLog(String lobbyKey) {
     var now = DateTime.now();
-
     var milliseconds = now.millisecondsSinceEpoch;
     return FirebaseFirestore.instance
         .collection(lobbyKey)
