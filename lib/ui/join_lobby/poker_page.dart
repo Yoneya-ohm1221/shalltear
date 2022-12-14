@@ -54,12 +54,15 @@ class _PokerPageState extends State<PokerPage> {
               child: CircularProgressIndicator(),
             );
           }
-
           readData();
 
           return GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount:
+                  MediaQuery.of(context).orientation == Orientation.landscape
+                      ? 5
+                      : 3,
+            ),
             itemCount: mainCard.length,
             itemBuilder: (context, index) {
               return buildContainer(mainCard[index].name, mainCard[index].value,
@@ -198,7 +201,10 @@ class _PokerPageState extends State<PokerPage> {
                   const SizedBox(height: 16),
                   Expanded(
                       child: GridView.count(
-                    crossAxisCount: 3,
+                    crossAxisCount: MediaQuery.of(context).orientation ==
+                            Orientation.landscape
+                        ? 5
+                        : 3,
                     children: <Widget>[
                       cardPoker("0", setState),
                       cardPoker("1", setState),
@@ -417,7 +423,7 @@ class _PokerPageState extends State<PokerPage> {
           "timestamp": milliseconds,
           "log": mainCard.map((e) => e.toJson()).toList()
         })
-        .then((value) => print("User Added"))
-        .catchError((error) => print("Failed to add user: $error"));
+        .then((value) => {})
+        .catchError((error) => {});
   }
 }
