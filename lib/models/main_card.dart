@@ -16,8 +16,8 @@ class MainCard{
   };
 
   factory MainCard.fromJson(Map<String, dynamic> json) => MainCard(
-    name: json["name"],
-    value: json["value"],
+    name: json["name"] as String,
+    value: json["value"] as String,
   );
 
 }
