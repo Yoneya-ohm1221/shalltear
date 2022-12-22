@@ -32,7 +32,7 @@ class _HomeState extends State<Home> {
 
   Future<void> getName() async {
     final prefs = await SharedPreferences.getInstance();
-    String name = prefs.getString('Name') ?? "Bob";
+    String name = prefs.getString('Name') ?? "Mr.";
     setState(() {
       txtName = name;
     });
@@ -41,17 +41,20 @@ class _HomeState extends State<Home> {
   Future<void> checkName() async {
     final prefs = await SharedPreferences.getInstance();
     String? name = prefs.getString('Name');
-    if(name ==null || name.isEmpty){
-      saveName('Bob');
+    if(name == null || name.isEmpty){
+      saveName('Mr${idGenerator()}');
     }
+  }
+
+  String idGenerator() {
+    final now = DateTime.now();
+    return now.microsecondsSinceEpoch.toString();
   }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    checkName();
-    getName();
+    checkName().then((value) => getName());
   }
 
   @override
